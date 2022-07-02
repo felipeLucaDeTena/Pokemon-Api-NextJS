@@ -1,0 +1,97 @@
+.container {
+  background: url('/background.png') no-repeat center fixed;
+  background-size: cover;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.card {
+  width: 15vw;
+  height: 15vw;
+  border: none;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardContainer {
+  height: 80%;
+  width: 80%;
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  align-items: center;
+  justify-items: center;
+  row-gap: 1%;
+  column-gap: 1%;
+}
+
+.sprites {
+  height: 50%;
+  width: 50%;
+  z-index: 1;
+  color: #ffffff5a;
+  position: relative;
+}
+.sprites:hover {
+  animation: MoveUpDown 0.5s linear infinite;
+}
+
+@keyframes MoveUpDown {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.name {
+  color: white;
+  text-transform: capitalize;
+  margin-top: 2px;
+  font-size: 1.2rem;
+}
+.icons {
+  width: 60%;
+}
+.iconsContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.iconWrapper {
+  width: 10%;
+  height: 160%;
+  border-radius: 50%;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 5px;
+}
+.pageContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.paginationButton {
+  height: 50px;
+  width: 50px;
+  font-size: 40px;
+  margin: 0 30px;
+  color: #f6cc4b;
+  background-color: #d74723;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
