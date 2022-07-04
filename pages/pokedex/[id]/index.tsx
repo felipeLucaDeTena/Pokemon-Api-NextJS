@@ -8,11 +8,10 @@ import { icons } from '../../../data/icons'
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { setEnvironmentData } from 'worker_threads'
 
 function PokemonDetail({ pokemon, specie, evolution }: any) {
-  const [pokeEvo, setPokeEvo] = useState(pokemon.name)
-  const [pokePreEvo, setPokePreEvo] = useState(pokemon.name)
+  const [pokeEvo, setPokeEvo] = useState('' as any)
+  const [pokePreEvo, setPokePreEvo] = useState('' as any)
 
   const stats = pokemon.stats.map((e: any) => {
     return { [e.stat.name]: e.base_stat }
@@ -20,6 +19,9 @@ function PokemonDetail({ pokemon, specie, evolution }: any) {
   const descriptions = specie.flavor_text_entries.filter(
     (e: any) => e.language.name === 'en'
   )
+
+  const preEvo = specie.evolves_from_species
+
   const router = useRouter()
   let pageId = pokemon.id
 
@@ -38,34 +40,51 @@ function PokemonDetail({ pokemon, specie, evolution }: any) {
 
   function evolvesTo() {
     let evo: any
-    if (evolution.chain.species.name === pokemon.name) {
+    if (
+      evolution.chain.species.name === pokemon.name &&
+      evolution.chain.evolves_to.length !== 0
+    ) {
       evo = evolution.chain.evolves_to[0].species
     } else {
       evolution.chain.evolves_to.find((e: any) =>
-        e.species.name === pokemon.name
-          ? (evo = e.evolves_to[0].species) && e.evolves_to.length > 0
+        e.evolves_to.length !== 0 && e.species.name === pokemon.name
+          ? (evo = e.evolves_to[0].species)
           : e.evolves_to.find((el: any) => {
               if (el.species.name === pokemon.name) {
-                evo = pokemon.name
+                evo = undefined
               }
             })
       )
     }
     return evo
   }
-  const evoo = evolvesTo()
 
-  // useEffect(() => {
-  //   const evo = evolvesTo()
-  //   async function fetchData() {
-  //     if (evo !== pokemon.name) {
-  //       const response = await fetch(evo.url)
-  //       setEvo(await response.json())
-  //     }
-  //   }
-  //   fetchData()
-  // }, [])
-  // console.log(evo)
+  useEffect(() => {
+    const evo = evolvesTo()
+    async function fetchUrlData(url: any) {
+      const response = await axios.get(url)
+      return await response.data
+    }
+    if (evo !== undefined) {
+      const EVO_URL = evo.url.replace(
+        'https://pokeapi.co/api/v2/pokemon-species/',
+        'https://pokeapi.co/api/v2/pokemon/'
+      )
+      fetchUrlData(EVO_URL).then((resp) => setPokeEvo(resp))
+    } else {
+      setPokeEvo(undefined)
+    }
+    if (preEvo !== null) {
+      const PREEVO_URL = preEvo.url.replace(
+        'https://pokeapi.co/api/v2/pokemon-species/',
+        'https://pokeapi.co/api/v2/pokemon/'
+      )
+      fetchUrlData(PREEVO_URL).then((resp) => setPokePreEvo(resp))
+    } else {
+      setPokePreEvo(null)
+    }
+  }, [pokemon])
+  console.log(pokemon)
 
   return (
     <>
@@ -128,51 +147,87 @@ function PokemonDetail({ pokemon, specie, evolution }: any) {
               </div>
             </div>
             <div className={styles.wrapperContainer}>
-              <div className={styles.firstContainer}>
-                <div className={styles.statsContainer}>
-                  <h4
-                    className={styles.title}
-                    style={{ color: `${colors[pokemon.types[0].type.name]}` }}
-                  >
-                    stats
-                  </h4>
-                  {stats.map((stat: any) => (
-                    <div
-                      className={styles.statContainer}
-                      key={Object.keys(stat) as unknown as string}
+              <div className={styles.innerwrapperContainer}>
+                <div className={styles.firstContainer}>
+                  <div className={styles.statsContainer}>
+                    <h4
+                      className={styles.title}
+                      style={{ color: `${colors[pokemon.types[0].type.name]}` }}
                     >
-                      <label htmlFor="poke_stat">{Object.keys(stat)}</label>
-                      <meter
-                        id="poke_stat"
-                        min="0"
-                        max="100"
-                        value={stat[Object.keys(stat) as unknown as string]}
-                      ></meter>
-                    </div>
-                  ))}
+                      Stats
+                    </h4>
+                    {stats.map((stat: any) => (
+                      <div
+                        className={styles.statContainer}
+                        key={Object.keys(stat) as unknown as string}
+                      >
+                        <label htmlFor="poke_stat">{Object.keys(stat)}</label>
+                        <meter
+                          id="poke_stat"
+                          min="0"
+                          max="100"
+                          value={stat[Object.keys(stat) as unknown as string]}
+                        ></meter>
+                      </div>
+                    ))}
+                  </div>
+                  <div className={styles.description}>
+                    <p>{descriptions[0].flavor_text}</p>
+                    <img
+                      className={styles.sprites}
+                      src={pokemon.sprites.front_default}
+                      alt=""
+                    />
+                    <img
+                      className={styles.sprites}
+                      src={pokemon.sprites.back_default}
+                      alt=""
+                    />
+                    <img
+                      className={styles.sprites}
+                      src={pokemon.sprites.front_shiny}
+                      alt=""
+                    />
+                    <img
+                      className={styles.sprites}
+                      src={pokemon.sprites.back_shiny}
+                      alt=""
+                    />
+                  </div>
                 </div>
-                <div className={styles.description}>
-                  <p>{descriptions[0].flavor_text}</p>
-                  <img
-                    className={styles.sprites}
-                    src={pokemon.sprites.front_default}
-                    alt=""
-                  />
-                  <img
-                    className={styles.sprites}
-                    src={pokemon.sprites.back_default}
-                    alt=""
-                  />
-                  <img
-                    className={styles.sprites}
-                    src={pokemon.sprites.front_shiny}
-                    alt=""
-                  />
-                  <img
-                    className={styles.sprites}
-                    src={pokemon.sprites.back_shiny}
-                    alt=""
-                  />
+                <div className={styles.firstContainer}>
+                  <div className={styles.movesContainer}>
+                    <h4
+                      className={styles.title}
+                      style={{ color: `${colors[pokemon.types[0].type.name]}` }}
+                    >
+                      Move Set
+                    </h4>
+                    <div className={styles.movesInnerContainer}>
+                      {pokemon.moves.map((move: any) => (
+                        <p
+                          className={styles.moves}
+                          key={move.name}
+                        >{`${move.move.name} `}</p>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={styles.evoSpritesContainer}>
+                    {pokePreEvo && pokePreEvo !== null && (
+                      <img
+                        className={styles.evoSprites}
+                        src={pokePreEvo.sprites.front_default}
+                        alt=""
+                      />
+                    )}
+                    {pokeEvo && pokeEvo !== (undefined || pokemon.name) && (
+                      <img
+                        className={styles.evoSprites}
+                        src={pokeEvo.sprites.front_default}
+                        alt=""
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
               <div className={styles.aboutContainer}>
@@ -184,7 +239,6 @@ function PokemonDetail({ pokemon, specie, evolution }: any) {
                 </h4>
                 <div className={styles.typeContainer}>
                   <p>Type : </p>
-
                   <p
                     className={styles.type}
                     style={{ color: `${colors[pokemon.types[0].type.name]}` }}

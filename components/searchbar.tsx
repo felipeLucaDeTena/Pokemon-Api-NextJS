@@ -3,7 +3,6 @@
 import styles from '../styles/Nav.module.css'
 
 function SearchBar({ searchData }: any) {
-  console.log(searchData)
   const handleSubmit = (e: any) => {
     console.log(e.target.value)
   }
